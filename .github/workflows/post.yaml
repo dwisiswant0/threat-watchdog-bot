@@ -1,0 +1,35 @@
+name: Post
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SOURCE_URL: ${{ secrets.SOURCE_URL }}
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  DISCORD_ROLE_ID: ${{ secrets.DISCORD_ROLE_ID }}
+
+jobs:
+  post:
+    name: Post
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run parse:out
+      - run: bun run send
+      - name: Update log
+        run: |
+          git config --local user.email "git@dw1.io"
+          git config --local user.name "Dwi Siswanto"
+          git commit -am "auto-update log :robot:"
+          git push origin ${{ github.ref }}
+        continue-on-error: true

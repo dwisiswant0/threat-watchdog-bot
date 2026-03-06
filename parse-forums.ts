@@ -128,6 +128,15 @@ function rankSourceUrl(url: string): number {
 function extractPreferredSourceUrl(block: string): string | null {
   const candidates: { href: string; text: string }[] = [];
 
+  for (const match of block.matchAll(/openSourceWarning\s*\(\s*['"]([^'"]+)['"]\s*\)/gi)) {
+    const href = normalizeText(decodeEntities(match[1] ?? ""));
+    if (!href) {
+      continue;
+    }
+
+    candidates.push({ href, text: "SOURCE" });
+  }
+
   for (const match of block.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
     const href = normalizeText(decodeEntities(match[1] ?? ""));
     const text = normalizeText(stripTags(match[2] ?? "")) ?? "";
